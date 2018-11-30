@@ -19,7 +19,7 @@ class Calc:
         return self.start_date, self.enddate
     
     def get_table(self, object):
-        self.start_date, self.enddate = self.auto_set()
+        self.start_date, self.enddate = self._auto_set()
         __obj = pd.DataFrame(object).transpose()
         for i in range(__obj.shape[1]):
             __obj.iloc[:,i] = pd.Series(__obj.iloc[:,i]).interpolate()
