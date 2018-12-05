@@ -1,1 +1,11 @@
-**/idea/
+# File Types
+*.txt
+*.json
+*.png
+*.jpg
+*.zip
+*.tar
+
+
+# Dirs
+**/.idea/
