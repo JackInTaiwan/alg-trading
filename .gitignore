@@ -5,6 +5,8 @@
 *.jpg
 *.zip
 *.tar
+*.npy
+*.pkl
 
 
 # Dirs
