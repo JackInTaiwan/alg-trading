@@ -1,4 +1,7 @@
-from .base_trainer import BaseTrainer
+try:
+    from .base_trainer import BaseTrainer
+except:
+    from base_trainer import BaseTrainer
 
 
 
@@ -25,4 +28,8 @@ class SimpleTrainer(BaseTrainer):
 
 
     def train(self):
+        pass
+
+
+    def predict(self):
         pass

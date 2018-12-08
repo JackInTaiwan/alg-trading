@@ -33,3 +33,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def train(self):
         raise NotImplementedError
+
+
+    @abc.abstractmethod
+    def predict(self, data):
+        raise NotImplementedError

@@ -1,8 +1,12 @@
 from pymongo import MongoClient
-from .utils.schema import Schema
 
 import logging
 import numpy as np
+
+try:
+    from .utils.schema import Schema
+except:
+    from utils.schema import Schema
 
 
 
