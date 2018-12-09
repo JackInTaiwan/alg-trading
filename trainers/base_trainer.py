@@ -3,14 +3,16 @@ import abc
 
 
 class BaseTrainer(metaclass=abc.ABCMeta):
-    def __init__(self, data=None):
-        self.__data = data
+    def __init__(self):
+        self.data = None
 
 
+    @abc.abstractproperty
     @staticmethod
     @abc.abstractmethod
     def add_param_parser(subparser):
         raise NotImplementedError
+
 
     @staticmethod
     @abc.abstractmethod
@@ -27,14 +29,9 @@ class BaseTrainer(metaclass=abc.ABCMeta):
 
 
     def load_data(self, data):
-        self.__data = data
+        self.data = data
 
 
     @abc.abstractmethod
     def train(self):
-        raise NotImplementedError
-
-
-    @abc.abstractmethod
-    def predict(self, data):
         raise NotImplementedError

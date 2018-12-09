@@ -6,15 +6,15 @@ except:
 
 
 class SimpleTrainer(BaseTrainer):
-    def __init__(self, data=None, *args, **kwargs):
-        super(SimpleTrainer, self).__init__(*args, **kwargs)
-        self.__data = data
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 
+    @staticmethod
     def add_param_parser(subparser):
         subparser.add_argument("-a", type=int)
 
-
+    @staticmethod
     def set_trainer_parameters(args):
         pass
 
@@ -23,11 +23,8 @@ class SimpleTrainer(BaseTrainer):
         return data
 
 
-    def load_data(self, data):
-        self.__data = data
-
-
     def train(self):
+        print(self.data)
         pass
 
 
