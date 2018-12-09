@@ -1,6 +1,9 @@
 import abc
+import logging
 
 
+
+logger = logging.getLogger(__name__)
 
 class BaseTrainer(metaclass=abc.ABCMeta):
     def __init__(self):
@@ -14,9 +17,8 @@ class BaseTrainer(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
 
-    @staticmethod
     @abc.abstractmethod
-    def set_trainer_parameters(args):
+    def set_trainer_parameters(self, args):
         raise NotImplementedError
         
 
