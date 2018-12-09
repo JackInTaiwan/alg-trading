@@ -1,4 +1,5 @@
 import sys
+import logging
 
 from argparse import ArgumentParser
 from data_controller.data_fetch import MongoFetch
@@ -8,10 +9,13 @@ from trainers import (
 
 
 
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)-0s] %(name)-0s >> %(message)-0s")
+logger = logging.getLogger(__name__)
+
+
 TRAINER_TABLE = {
     "simple": SimpleTrainer,
 }
-
 
 
 if __name__ == "__main__":
@@ -32,8 +36,9 @@ if __name__ == "__main__":
     trainer_param_subparser = subparsers.add_parser("param")
     Trainer.add_param_parser(trainer_param_subparser)
 
+    trainer = Trainer()
     args = parser.parse_args()
-    Trainer.set_trainer_parameters(args)
+    trainer.set_trainer_parameters(args)
 
 
     ### Data loading / fetching
@@ -46,9 +51,8 @@ if __name__ == "__main__":
     elif args.load:
         data = mongo_fetch.load_from_np(args.load)
 
-
+    logger.debug(args)
     ### Training
-    trainer = Trainer()
     preprocessed_data = trainer.data_preprocess(data)
     trainer.load_data(preprocessed_data)
     trainer.train()
