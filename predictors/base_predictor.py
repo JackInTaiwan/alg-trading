@@ -26,9 +26,8 @@ class BasePredictor(metaclass=abc.ABCMeta):
         raise NotImplementedErro
 
 
-    @staticmethod
     @abc.abstractmethod
-    def set_trainer_parameters(args):
+    def set_trainer_parameters(self, args):
         raise NotImplementedError
         
 

@@ -22,8 +22,7 @@ class SimplePredictor(BasePredictor):
         subparser.add_argument("--cc")
 
 
-    @staticmethod
-    def set_trainer_parameters(args):
+    def set_trainer_parameters(self, args):
         pass
         
 
