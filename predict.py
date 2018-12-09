@@ -1,4 +1,5 @@
 import sys
+import logging
 import numpy as np
 
 from argparse import ArgumentParser
@@ -6,6 +7,8 @@ from predictors import SimplePredictor
 from data_controller.data_fetch import MongoFetch
 
 
+
+logging.basicConfig(level=logging.DEBUG, format="[%(levelname)-0s] %(name)-0s >> %(message)-0s")
 
 PREDICT_MODE = {
     "normal": "Use previous n days data to predict next one where output is a 1x4 np.array containing open, close, high and low prices in form of number.",
