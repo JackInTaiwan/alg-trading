@@ -1,7 +1,7 @@
-from pymongo import MongoClient
-
 import logging
 import numpy as np
+
+from pymongo import MongoClient
 
 try:
     from .utils.schema import Schema
