@@ -93,6 +93,7 @@ class LSTMTrainer(BaseTrainer):
                 loss.backward()
                 optim.step()
 
+            logger.info()
 
     def save(self, model):
         import os
