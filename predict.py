@@ -9,6 +9,7 @@ from data_controller.data_fetch import MongoFetch
 
 
 logging.basicConfig(level=logging.DEBUG, format="[%(levelname)-0s] %(name)-0s >> %(message)-0s")
+logger = logging.getLogger(__name__)
 
 PREDICT_MODE = {
     "normal": "Use previous n days data to predict next one where output is a 1x4 np.array containing open, close, high and low prices in form of number.",
@@ -17,6 +18,18 @@ PREDICT_MODE = {
 PREDICTOR_TABLE = {
     "simple": SimplePredictor,
 }
+
+
+
+def save_prediction(predictor_name, ticker, s_date, e_date, prediction):
+    if type(prediction) is not np.ndarray:
+        prediction = np.array(prediction)
+    
+    np.save(
+        "{}_{}_{}_{}.npy".format(predictor_name, ticker, s_date, e_date),
+        prediction
+    )
+
 
 
 if __name__ == "__main__":
@@ -59,4 +72,6 @@ if __name__ == "__main__":
         data = mongo_fetch.load_from_np(args.load)
         
     preprocessed_data = predictor.data_preprocess(data)
-    prediction = predictor.predict(preprocessed_data)
+    prediction = predictor.predict(args.start_date, args.end_date, preprocessed_data)
+    
+    save_prediction(arg_predictor, args.fetch[0], args.start_date, args.end_date, prediction)

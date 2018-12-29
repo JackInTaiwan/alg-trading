@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from data_controller.data_fetch import MongoFetch
 from trainers import (
     SimpleTrainer,
+    LSTMTrainer,
 )
 
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 TRAINER_TABLE = {
     "simple": SimpleTrainer,
+    "lstm": LSTMTrainer,
 }
 
 
