@@ -22,9 +22,7 @@ class LSTMTrainer(BaseTrainer):
         self.args = None
         self.use_days = None
         self.train_data_num = None
-        self.model_index = 0
-        self.batch = 0
-        self.epoch = 0
+        self.load_path = ""
         self.model_params = {
             "input_size": 4,
             "output_size": 4,
@@ -38,7 +36,6 @@ class LSTMTrainer(BaseTrainer):
 
     @staticmethod
     def add_param_parser(subparser):
-        subparser.add_argument("-u", "--use-days", type=int, required=True, help="use how many days to predict next one")
         subparser.add_argument("-i", "--model-index", type=int, default=0, help="model index")
         subparser.add_argument("--train-data", type=int, required=True, help="produce how many data as training set")
         subparser.add_argument("--batch", type=int, default=10, help="batch size for training")
@@ -56,7 +53,20 @@ class LSTMTrainer(BaseTrainer):
         self.mean = args.mean
 
 
-    def data_preprocess(self, data):
+    @staticmethod
+    def add_predict_param_parser(subparser):
+        subparser.add_argument("--load", type=str, required=True, help="path of trained model")
+        subparser.add_argument("--mean", type=int, default=140, help="expected value of stock")
+
+
+    def set_predict_trainer_parameters(self, args):
+        self.args = args
+        self.use_days = args.use_days
+        self.load_path = args.load
+        self.mean = args.mean
+
+
+    def train_data_preprocess(self, data):
         data = [[item["open_p"], item["closing_p"], item["day_low"], item["day_high"]] for item in data]
         data = np.array(data)
         logger.debug(data.shape)
@@ -71,6 +81,24 @@ class LSTMTrainer(BaseTrainer):
         logger.debug(x_data.shape, y_data.shape)
         
         return (x_data, y_data)
+
+
+    def predict_data_preprocess(self, data):
+        data = [[item["u_id"], item["open_p"], item["closing_p"], item["day_low"], item["day_high"]] for item in data]
+        data = np.array(data)
+        logger.debug(data.shape)
+        logger.debug(data[:10])
+
+        x_data = np.empty((data.shape[0] - self.use_days , self.use_days, 5))
+        logger.debug(x_data.shape)
+        date_data = []
+        for i in range(x_data.shape[0]):
+            x_data[i] = np.reshape(data[i:i + self.use_days, :], (-1, self.use_days, 5))
+            date_data.append(data[i + self.use_days][0])
+        
+        logger.debug(x_data.shape)
+        
+        return (date_data, x_data)
 
 
     def train(self):
@@ -140,7 +168,24 @@ class LSTMTrainer(BaseTrainer):
                 "args": vars(args),
             }
             json.dump(info, f)
-            
+
+
+    def predict(self):
+        date_data, x_data = self.data
+        logger.debug(len(date_data))
+        logger.debug(x_data.shape)
+        x_test = tor.FloatTensor(x_data[:, :, 1:])
+        lstm = LSTMModel(self.model_params)
+        lstm.load_state_dict(tor.load(self.load_path))
+        lstm.eval()
+
+        prediction = np.empty((x_test.shape[0], 5))
+        for i, x in enumerate(x_test):
+            pred = lstm(x.reshape(1, x.size(0), x.size(1)))
+            prediction[i] = np.hstack((np.array(date_data[i]).reshape(1, -1), pred.detach().numpy() + self.mean))
+
+        return prediction
+
 
 
 class LSTMModel(nn.Module):
