@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 from argparse import ArgumentParser
-# from predictors import SimplePredictor
 from trainers import LSTMTrainer
 from data_controller.data_fetch import MongoFetch
 
@@ -18,7 +17,6 @@ PREDICT_MODE = {
     "suggest": "Use previous n days data to predict next one where output is a 1x5 np.array denoting suggetion intention.",
 }
 TRAINER_TABLE = {
-    # "simple": SimplePredictor,
     "lstm": LSTMTrainer,
 }
 
@@ -44,15 +42,16 @@ def fetch_test_data(ticker, s_date, e_date, use_days):
 
 
 def save_prediction(predictor_name, ticker, s_date, e_date, prediction):
+    import os
     if type(prediction) is not np.ndarray:
         prediction = np.array(prediction)
     pd.DataFrame(prediction).to_csv(
-        "{}_{}_{}_{}.csv".format(predictor_name, ticker, s_date, e_date)
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "predictions",
+            "{}_{}_{}_{}.csv".format(predictor_name, ticker, s_date, e_date)
+        )
     )
-    # np.save(
-    #     "{}_{}_{}_{}.npy".format(predictor_name, ticker, s_date, e_date),
-    #     prediction
-    # )
 
 
 
@@ -67,13 +66,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--start-date", type=str, action="store", required=True, help="the start date you want to predict: [yyymmdd]")
     parser.add_argument("-e", "--end-date", type=str, action="store", required=True, help="the end date you want to predict: [yyymmdd]")
     
-    # group = parser.add_mutually_exclusive_group(required=True)
-    # group.add_argument("--fetch", type=str, action="store", nargs=3, help="fetch data via mongo DB: [ticker] [start_date] [end_date]")
-    # group.add_argument("--download", type=str, action="store", nargs=4, help="fetch data via mongo DB and download: [ticker] [start_date] [end_date] [save file path]")
-    # group.add_argument("--load", action="store", help="load data via local data: [file path]")
-    
     Trainer = TRAINER_TABLE[arg_trainer]
-    # Trainer.init_model_list()
 
     trainer = Trainer()
     subparsers = parser.add_subparsers()
@@ -82,11 +75,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     trainer.set_predict_trainer_parameters(args)
-
-    # if args.mode not in Trainer.mode_list:
-    #     raise ValueError("The prediction mode '{}' if not supported by the trainer '{}'.".format(args.mode, args.trainer))
-
-    # trainer.set_mode(args.mode)
 
     data = fetch_test_data(args.ticker, args.start_date, args.end_date, args.use_days)
         
