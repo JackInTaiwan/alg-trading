@@ -27,12 +27,12 @@ class LSTMTrainer(BaseTrainer):
         self.model_params = {
             "input_size": 4,
             "output_size": 4,
-            "hidden_size": 2 ** 6,
+            "hidden_size": 2 ** 9,
             "num_layers": 3,
-            "fc_1": 2 ** 8,
+            "fc_1": 2 ** 9,
             "dropout": 0.5,
         }
-        self.lr = 0.00001
+        self.lr = 0.0001
 
 
     @staticmethod
