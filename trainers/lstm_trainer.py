@@ -123,14 +123,15 @@ class LSTMTrainer(BaseTrainer):
                 
                 loss = loss_func(pred, y)
                 total_loss += loss
-                #logger.info("Loss: {}".format(loss))
-
                 loss.backward()
                 optim.step()
-            print("total loss:", total_loss)   
-            print(y)
-            print(tor.mean(x, dim=1))
-            print(pred)
+                
+            logger.debug("y: {}".format(y))
+            logger.debug("mean: {}".format(tor.mean(x, dim=1)))
+            logger.debug("pred: {}".format(pred))
+            logger.info("total loss:{}".format(total_loss))
+
+            ### Validation loss
             optim.zero_grad()
             y = tor.FloatTensor(y_test)
 
