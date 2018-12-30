@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from data_controller.data_fetch import MongoFetch
 from trainers import (
     SimpleTrainer,
+    LSTMTrainer,
 )
 
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 TRAINER_TABLE = {
     "simple": SimpleTrainer,
+    "lstm": LSTMTrainer,
 }
 
 
@@ -25,6 +27,7 @@ if __name__ == "__main__":
     ### Parser
     parser = ArgumentParser()
     parser.add_argument("--model", action="store", required=True, choices=TRAINER_TABLE.keys(), help="the name of the model")
+    parser.add_argument("-u", "--use-days", type=int, required=True, help="use how many days to predict next one")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--fetch", type=str, action="store", nargs=3, help="fetch data via mongo DB: [ticker] [start_date] [end_date]")
     group.add_argument("--download", type=str, action="store", nargs=4, help="fetch data via mongo DB and download: [ticker] [start_date] [end_date] [save file path]")
@@ -51,8 +54,8 @@ if __name__ == "__main__":
     elif args.load:
         data = mongo_fetch.load_from_np(args.load)
 
-    logger.debug(args)
+    
     ### Training
-    preprocessed_data = trainer.data_preprocess(data)
+    preprocessed_data = trainer.train_data_preprocess(data)
     trainer.load_data(preprocessed_data)
     trainer.train()

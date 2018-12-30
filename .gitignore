@@ -7,7 +7,15 @@
 *.tar
 *.npy
 *.pkl
+*.csv
 
 
 # Dirs
 **/.idea/
+**/__pycache__/
+.venv/
+
+
+# Specific Files
+script.sh
+note.py
