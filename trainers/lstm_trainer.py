@@ -27,7 +27,7 @@ class LSTMTrainer(BaseTrainer):
         self.model_params = {
             "input_size": 4,
             "output_size": 4,
-            "hidden_size": 20,
+            "hidden_size": 2 ** 6,
             "num_layers": 3,
             "fc_1": 2 ** 8,
             "dropout": 0.5,
@@ -116,19 +116,27 @@ class LSTMTrainer(BaseTrainer):
 
         ### Training
         for epoch in range(self.epoch):
+            total_loss = 0
             for step, (x, y) in enumerate(data_loader):
                 optim.zero_grad()
                 pred = lstm(x)
                 
                 loss = loss_func(pred, y)
-                logger.info("Loss: {}".format(loss))
+                total_loss += loss
+                #logger.info("Loss: {}".format(loss))
 
                 loss.backward()
                 optim.step()
-
+            print("total loss:", total_loss)   
+            print(y)
+            print(tor.mean(x, dim=1))
+            print(pred)
             optim.zero_grad()
             y = tor.FloatTensor(y_test)
+
+            lstm.eval()
             pred = lstm(tor.FloatTensor(x_test))
+            lstm.train()
 
             loss_valid = loss_func(pred, y)
             logger.info("Loss on valid: {}".format(loss_valid))
