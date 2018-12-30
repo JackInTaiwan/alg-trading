@@ -2,6 +2,7 @@ import logging
 import numpy as np
 import torch as tor
 import torch.nn as nn
+
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
@@ -29,9 +30,9 @@ class LSTMTrainer(BaseTrainer):
             "hidden_size": 20,
             "num_layers": 3,
             "fc_1": 2 ** 8,
-            "dropout": 0,
+            "dropout": 0.5,
         }
-        self.lr = 0.0001
+        self.lr = 0.00001
 
 
     @staticmethod
@@ -40,7 +41,6 @@ class LSTMTrainer(BaseTrainer):
         subparser.add_argument("--train-data", type=int, required=True, help="produce how many data as training set")
         subparser.add_argument("--batch", type=int, default=10, help="batch size for training")
         subparser.add_argument("--epoch", type=int, default=10, help="expected training epoches")
-        subparser.add_argument("--mean", type=int, default=140, help="expected value of stock")
 
 
     def set_trainer_parameters(self, args):
@@ -50,26 +50,22 @@ class LSTMTrainer(BaseTrainer):
         self.model_index = args.model_index
         self.batch = args.batch
         self.epoch = args.epoch
-        self.mean = args.mean
 
 
     @staticmethod
     def add_predict_param_parser(subparser):
         subparser.add_argument("--load", type=str, required=True, help="path of trained model")
-        subparser.add_argument("--mean", type=int, default=140, help="expected value of stock")
 
 
     def set_predict_trainer_parameters(self, args):
         self.args = args
         self.use_days = args.use_days
         self.load_path = args.load
-        self.mean = args.mean
 
 
     def train_data_preprocess(self, data):
         data = [[item["open_p"], item["closing_p"], item["day_low"], item["day_high"]] for item in data]
         data = np.array(data)
-        logger.debug(data.shape)
 
         x_data = np.empty((self.train_data_num , self.use_days, 4))
         y_data = np.empty((self.train_data_num, 4))
@@ -78,34 +74,31 @@ class LSTMTrainer(BaseTrainer):
             x_data[i] = np.reshape(data[start_i:start_i + self.use_days, :], (-1, self.use_days, 4))
             y_data[i] = data[start_i + self.use_days]
         
-        logger.debug(x_data.shape, y_data.shape)
-        
+        logger.info("preprocessed x_data shape: {}".format(x_data.shape))
         return (x_data, y_data)
 
 
     def predict_data_preprocess(self, data):
         data = [[item["u_id"], item["open_p"], item["closing_p"], item["day_low"], item["day_high"]] for item in data]
         data = np.array(data)
-        logger.debug(data.shape)
-        logger.debug(data[:10])
+        logger.debug("predicted data shape:{}".format(data.shape))
 
         x_data = np.empty((data.shape[0] - self.use_days , self.use_days, 5))
-        logger.debug(x_data.shape)
         date_data = []
         for i in range(x_data.shape[0]):
             x_data[i] = np.reshape(data[i:i + self.use_days, :], (-1, self.use_days, 5))
             date_data.append(data[i + self.use_days][0])
         
-        logger.debug(x_data.shape)
-        
+        logger.info("preprocessed x_data shape: {}".format(x_data.shape))
+
         return (date_data, x_data)
 
 
     def train(self):
         ### Load date
         x_data, y_data = self.data
-        x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.2, random_state=0)
-        x_train, x_test, y_train, y_test = x_train - self.mean, x_test - self.mean, y_train - self.mean, y_test - self.mean
+        x_train, x_test, y_train, y_test = train_test_split(x_data, y_data, test_size=0.1, random_state=0)
+        x_train, x_test, y_train, y_test = x_train, x_test, y_train, y_test
         logger.info("data sizes: {}".format((x_train.shape, x_test.shape, y_train.shape, y_test.shape)))
         
         data_set = TensorDataset(tor.FloatTensor(x_train), tor.FloatTensor(y_train))
@@ -134,10 +127,9 @@ class LSTMTrainer(BaseTrainer):
                 optim.step()
 
             optim.zero_grad()
-            y = tor.FloatTensor(y_test[:10])
-            pred = lstm(tor.FloatTensor(x_test[:10]))
-            logger.debug(pred)
-            # logger.debug(y)
+            y = tor.FloatTensor(y_test)
+            pred = lstm(tor.FloatTensor(x_test))
+
             loss_valid = loss_func(pred, y)
             logger.info("Loss on valid: {}".format(loss_valid))
 
@@ -172,8 +164,6 @@ class LSTMTrainer(BaseTrainer):
 
     def predict(self):
         date_data, x_data = self.data
-        logger.debug(len(date_data))
-        logger.debug(x_data.shape)
         x_test = tor.FloatTensor(x_data[:, :, 1:])
         lstm = LSTMModel(self.model_params)
         lstm.load_state_dict(tor.load(self.load_path))
@@ -182,7 +172,7 @@ class LSTMTrainer(BaseTrainer):
         prediction = np.empty((x_test.shape[0], 5))
         for i, x in enumerate(x_test):
             pred = lstm(x.reshape(1, x.size(0), x.size(1)))
-            prediction[i] = np.hstack((np.array(date_data[i]).reshape(1, -1), pred.detach().numpy() + self.mean))
+            prediction[i] = np.hstack((np.array(date_data[i]).reshape(1, -1), pred.detach().numpy()))
 
         return prediction
 
@@ -202,14 +192,17 @@ class LSTMModel(nn.Module):
             batch_first=True,
         )
         self.sigmoid = tor.nn.Sigmoid()
+        self.drop = tor.nn.Dropout(p=kwargs["dropout"])
 
 
     def forward(self, x) :
+        # x: (batch, use_days, 4)
         o, (h_n, c_n) = self.lstm(x)     #(batch, seq, hidden_size), (layer, batch, hidden_size), (layer, batch, hidden_size)
         o = o[:, -1]
-        
+        m = tor.mean(x, dim=1)
         o = self.fc_1(o)
-        o = self.sigmoid(o)
+        o = self.drop(self.sigmoid(o))
         o = self.fc_2(o)
+        o = o + m
 
         return o
