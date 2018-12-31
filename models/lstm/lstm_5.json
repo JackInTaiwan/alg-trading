@@ -1,1 +1,0 @@
-{"model_param": {"fc_1": 512, "num_layers": 3, "hidden_size": 512, "output_size": 4, "dropout": 0.5, "input_size": 4}, "args": {"download": null, "model_index": 5, "epoch": 2000, "load": null, "use_days": 10, "batch": 4, "fetch": ["2330", "1050101", "1051231"], "train_data": 500, "model": "lstm"}, "time": "2018-12-30 23:33:35.173290"}
