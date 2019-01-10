@@ -42,7 +42,7 @@ class LSTMTrainer(BaseTrainer):
         subparser.add_argument("--train-data", type=int, required=True, help="produce how many data as training set")
         subparser.add_argument("--batch", type=int, default=10, help="batch size for training")
         subparser.add_argument("--epoch", type=int, default=10, help="expected training epoches")
-        subparser.add_argument("--gpu", type=bool, default=False, action="store_true", help="whether use gpu for training")
+        subparser.add_argument("--gpu", default=False, action="store_true", help="whether use gpu for training")
 
 
     @staticmethod
