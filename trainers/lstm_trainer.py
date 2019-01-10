@@ -113,7 +113,7 @@ class LSTMTrainer(BaseTrainer):
         )
         
         ### Model params
-        lstm = LSTMModel(self.model_params)
+        lstm = LSTMModel(self.model_params) if not self.gpu else LSTMModel(self.model_params).cuda()
         loss_func = tor.nn.MSELoss() if not self.gpu else tor.nn.MSELoss().cuda()
         optim = tor.optim.Adam(lstm.parameters(), lr=self.lr)
 
