@@ -138,8 +138,8 @@ class LSTMTrainer(BaseTrainer):
 
             ### Validation loss
             optim.zero_grad()
-            y_test = tor.FloatTensor(y_test) if not self.gpu else tor.FloatTensor(y_test).gpu()
-            x_test = tor.FloatTensor(x_test) if not self.gpu else tor.Floattensor(x_test).gpu()
+            y_test = tor.FloatTensor(y_test) if not self.gpu else tor.FloatTensor(y_test).cuda()
+            x_test = tor.FloatTensor(x_test) if not self.gpu else tor.Floattensor(x_test).cuda()
             lstm.eval()
             pred = lstm(tor.FloatTensor(x_test))
             lstm.train()
