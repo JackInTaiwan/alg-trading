@@ -3,6 +3,7 @@ import numpy as np
 import torch as tor
 import torch.nn as nn
 
+from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.model_selection import train_test_split
 
@@ -41,6 +42,12 @@ class LSTMTrainer(BaseTrainer):
         subparser.add_argument("--train-data", type=int, required=True, help="produce how many data as training set")
         subparser.add_argument("--batch", type=int, default=10, help="batch size for training")
         subparser.add_argument("--epoch", type=int, default=10, help="expected training epoches")
+        subparser.add_argument("--gpu", type=bool, default=False, action="store_true", help="whether use gpu for training")
+
+
+    @staticmethod
+    def add_predict_param_parser(subparser):
+        subparser.add_argument("--load", type=str, required=True, help="path of trained model")
 
 
     def set_trainer_parameters(self, args):
@@ -50,11 +57,7 @@ class LSTMTrainer(BaseTrainer):
         self.model_index = args.model_index
         self.batch = args.batch
         self.epoch = args.epoch
-
-
-    @staticmethod
-    def add_predict_param_parser(subparser):
-        subparser.add_argument("--load", type=str, required=True, help="path of trained model")
+        self.gpu = args.gpu
 
 
     def set_predict_trainer_parameters(self, args):
@@ -111,13 +114,15 @@ class LSTMTrainer(BaseTrainer):
         
         ### Model params
         lstm = LSTMModel(self.model_params)
-        loss_func = tor.nn.MSELoss()
+        loss_func = tor.nn.MSELoss() if not self.gpu else tor.nn.MSELoss().cuda()
         optim = tor.optim.Adam(lstm.parameters(), lr=self.lr)
 
         ### Training
         for epoch in range(self.epoch):
             total_loss = 0
             for step, (x, y) in enumerate(data_loader):
+                x = Variable(x) if not self.gpu else Variable(x).cuda()
+                y = Variable(y) if not self.gpu else Variable(y).cuda()
                 optim.zero_grad()
                 pred = lstm(x)
                 
