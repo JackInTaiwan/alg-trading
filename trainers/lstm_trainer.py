@@ -138,13 +138,13 @@ class LSTMTrainer(BaseTrainer):
 
             ### Validation loss
             optim.zero_grad()
-            y = tor.FloatTensor(y_test)
-
+            y_test = tor.FloatTensor(y_test) if not self.gpu else tor.FloatTensor(y_test).gpu()
+            x_test = tor.FloatTensor(x_test) if not self.gpu else tor.Floattensor(x_test).gpu()
             lstm.eval()
             pred = lstm(tor.FloatTensor(x_test))
             lstm.train()
 
-            loss_valid = loss_func(pred, y)
+            loss_valid = loss_func(pred, y_test)
             logger.info("Loss on valid: {}".format(loss_valid))
 
             if epoch % 50 == 0:
