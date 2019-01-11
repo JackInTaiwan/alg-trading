@@ -1,0 +1,1 @@
+{"time": "2019-01-10 17:56:52.792944", "model_param": {"input_size": 4, "output_size": 4, "hidden_size": 512, "num_layers": 3, "fc_1": 512, "dropout": 0.5}, "args": {"model": "lstm", "use_days": 10, "fetch": ["2330", "1050101", "1051231"], "download": null, "load": null, "model_index": 0, "train_data": 500, "batch": 4, "epoch": 1000}}
